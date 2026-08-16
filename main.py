@@ -1,13 +1,3 @@
-''' langchain, using agent-as-tool
-
-Data Receiver
- - Samantic Search
- - return RawData
-Report Generator
- - Synthesise easy to read for user
- - return WhatUserRead
-'''
-
 import os
 import getpass
 import requests
@@ -32,31 +22,51 @@ embeddings = AzureOpenAIEmbeddings(
     openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
 )'''
 
-#use gemini api to test (embedding)
-if not os.environ.get("GOOGLE_API_KEY"):
-    os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
+def get_model():
+    if not os.environ.get("GOOGLE_API_KEY"):
+        os.environ["GOOGLE_API_KEY"] = getpass.getpass("Enter API key for Google Gemini: ")
 
-doc_path = "knowledge_base.txt"
 
-with open(doc_path, "r", encoding="utf-8") as f:
-    text_content = f.read()
-document = [Document(page_content=text_content, metadata={"source": doc_path})]
+#create and store vector
+def create_vector_store(
+    doc_path: str,
+    chunk_size: int = 200,
+    overlap: int = 20,
+    embedding_model: str = "models/gemini-embedding-001",
+) -> InMemoryVectorStore:
 
-text_splitter = RecursiveCharacterTextSplitter(chunk_size = 125, chunk_overlap = 20)
-chunck = text_splitter.split_documents(document)
+    # Initialize embedding model
+    embeddings = GoogleGenerativeAIEmbeddings(model=embedding_model)
 
-embeddings = GoogleGenerativeAIEmbeddings(model="models/gemini-embedding-001")
-vector_store = InMemoryVectorStore.from_documents(documents=chunck,embedding=embeddings) #in memory for small data
+    # Read the document
+    with open(doc_path, "r", encoding="utf-8") as f:
+        text_content = f.read()
 
-@tool
-def search_data_base(query: str) ->str:
-    """Search the document database for user queries."""
-    retrieved_info = vector_store.similarity_search(query, k=3)
+    documents = [Document(page_content=text_content, metadata={"source": doc_path})]
+
+    # Split text into chunks
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size, chunk_overlap=overlap
+    )
+    chunks = text_splitter.split_documents(documents)
+
+    # Create and return the in-memory vector store
+    return InMemoryVectorStore.from_documents(
+        documents=chunks, embedding=embeddings
+    )
+
+
+@tool(parse_docstring=True)
+def search_data_base(
+    vector_store: InMemoryVectorStore,
+    query: str,
+    k: int = 2
+) ->str:
+    """Search the document database"""
+    retrieved_info = vector_store.similarity_search(query, k=k)
 
     if not retrieved_info:
         return "NO_RESULT_FOUND: No relevent content match the query"
 
     return
 
-@tool
-def generate_report()
