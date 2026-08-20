@@ -10,7 +10,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_openai import ChatOpenAI
 from langchain.agents import create_agent
 
-# --- Custom gateway configuration (from given curl payload)
+# --- Custom gateway configuration
 if not os.environ.get("AZURE_OPENAI_API_KEY"):
     os.environ["AZURE_OPENAI_API_KEY"] = getpass.getpass("Enter API key for the gateway: ")
 
