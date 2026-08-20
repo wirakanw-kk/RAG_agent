@@ -45,7 +45,6 @@ def load_chunks(doc_path: str, chunk_size: int = 200, overlap: int = 20) -> list
 
 class DataRetrieverAgent:
     """Retrieves raw snippet, does not answer query.
-
     Using keyword search due to the availability of the model
     """
 
