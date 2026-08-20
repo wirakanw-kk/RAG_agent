@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ## Use with your own data / query
 
 ```python
-from main import TwoAgentRAGSystem   # or: from main_azure import TwoAgentRAGSystem
+from main import TwoAgentRAGSystem
 
 system = TwoAgentRAGSystem("path/to/knowledge_base.txt")
 answer = system.answer("Your question here")
