@@ -26,3 +26,8 @@ from main import TwoAgentRAGSystem
 system = TwoAgentRAGSystem("path/to/knowledge_base.txt")
 answer = system.answer("Your question here")
 ```
+
+## Repo Structure
+
+- `script.py` - Main execution code.
+- `Result/` - Contains previous outputs
