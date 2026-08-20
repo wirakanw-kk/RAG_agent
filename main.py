@@ -117,12 +117,12 @@ class ReportGeneratorAgent:
 
         system_prompt = (
             "You are a Report Generator. Call retrieve_from_knowledge_base "
-            "once to gather snippets, then answer the question using only "
-            "that information. If any snippet contains information relevant "
+            "once to gather information, then answer the question using only "
+            "that information. If any part contains information relevant "
             "to the question - even partial or indirect - use it to write a "
             "concise, cohesive answer; do not refuse just because the "
             "answer isn't stated in full detail. Only say you can't answer "
-            "if the snippets are genuinely unrelated to the question - if "
+            "if the information are genuinely unrelated to the question - if "
             "so, say that in one brief sentence and stop there. Never "
             "speculate about other things the user might have meant or list "
             "alternate interpretations of the query. Don't mention snippets "
@@ -150,12 +150,12 @@ class TwoAgentRAGSystem:
     def __init__(self, txt_path: str):
         self.llm = ChatOpenAI(
             base_url=GATEWAY_BASE_URL,
-            api_key="unused",  # SDK need, enter apikey in header bellow
+            api_key="in_headers",
             default_headers={"api-key": AZURE_OPENAI_API_KEY},
             model=LLM_DEPLOYMENT,
-            use_responses_api=True,  # gateway expects {"model", "input"}
+            use_responses_api=True,
             reasoning_effort="minimal",
-            max_tokens=300,  ##due to sandbox rate limit
+            max_tokens=300,  #due to sandbox rate limit
             max_retries=6,  
         )
         self.retriever = DataRetrieverAgent(txt_path, self.llm)
@@ -163,6 +163,8 @@ class TwoAgentRAGSystem:
 
     def answer(self, query: str, verbose: bool = True) -> str:
         report = self.generator.generate(query, verbose=verbose)
+        print("QUERY: ")
+        print(query)
         if verbose:
             print("=" * 70)
             print("REPORT GENERATOR OUTPUT (final answer)")
@@ -176,5 +178,5 @@ if __name__ == "__main__":
     kb_path = os.path.join(os.path.dirname(__file__), "knowledge_base.txt")
     system = TwoAgentRAGSystem(kb_path)
 
-    query = "What does MAS oversees?"
+    query = "Who is the organization that purview MAS?"
     system.answer(query)
