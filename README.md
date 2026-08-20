@@ -29,5 +29,5 @@ answer = system.answer("Your question here")
 
 ## Repo Structure
 
-- `script.py` - Main execution code.
+- `main.py` - Main execution code.
 - `Result/` - Contains previous outputs
