@@ -51,7 +51,7 @@ class DataRetrieverAgent:
 
     WORD_PATTERN = re.compile(r"\w+")
 
-    def __init__(self, doc_path: str, llm: ChatOpenAI, k: int = 2):
+    def __init__(self, doc_path: str, llm: ChatOpenAI, k: int = 3):
         self.chunks = load_chunks(doc_path)
         self.k = k
         self.llm = llm
@@ -117,10 +117,16 @@ class ReportGeneratorAgent:
 
         system_prompt = (
             "You are a Report Generator. Call retrieve_from_knowledge_base "
-            "once to gather snippets, then write one cohesive, "
-            "non-redundant, well-formatted answer using only that "
-            "information. If it doesn't answer the question, say so. Don't "
-            "mention snippets or tools. Do not ask any further question."
+            "once to gather snippets, then answer the question using only "
+            "that information. If any snippet contains information relevant "
+            "to the question - even partial or indirect - use it to write a "
+            "concise, cohesive answer; do not refuse just because the "
+            "answer isn't stated in full detail. Only say you can't answer "
+            "if the snippets are genuinely unrelated to the question - if "
+            "so, say that in one brief sentence and stop there. Never "
+            "speculate about other things the user might have meant or list "
+            "alternate interpretations of the query. Don't mention snippets "
+            "or tools."
         )
 
         self.agent = create_agent(model=llm, tools=self.tools, system_prompt=system_prompt)
@@ -149,7 +155,7 @@ class TwoAgentRAGSystem:
             model=LLM_DEPLOYMENT,
             use_responses_api=True,  # gateway expects {"model", "input"}
             reasoning_effort="minimal",
-            max_tokens=300,  ##due to sand box rate limit
+            max_tokens=300,  ##due to sandbox rate limit
             max_retries=6,  
         )
         self.retriever = DataRetrieverAgent(txt_path, self.llm)
@@ -170,5 +176,5 @@ if __name__ == "__main__":
     kb_path = os.path.join(os.path.dirname(__file__), "knowledge_base.txt")
     system = TwoAgentRAGSystem(kb_path)
 
-    query = "What happened in 2002"
+    query = "What does MAS oversees?"
     system.answer(query)
